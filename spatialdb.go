@@ -18,9 +18,9 @@ type SpatialDB interface {
 	DeleteLayer(id string) (err error)
 
 	// Features
-	GetFeatures(layer string, spatialConstraint *SpatialConstraint) (features Features, err error)
+	GetFeatures(layerID string, spatialConstraint *SpatialConstraint) (features Features, err error)
 	GetFeature(id string) (feature *Feature, err error)
-	CreateFeature(layer string, feature *Feature) (createdFeature *Feature, err error)
+	CreateFeature(layerID string, feature *Feature) (createdFeature *Feature, err error)
 	UpdateFeature(id string, properties map[string]interface{}) (feature *Feature, err error)
 	DeleteFeature(id string) (err error)
 }

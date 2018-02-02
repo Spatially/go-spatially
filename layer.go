@@ -144,7 +144,7 @@ func (s spatialDB) DeleteLayer(id string) (err error) {
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != 200 {
-		return fmt.Errorf("There was an unexpected error delete layer ID: %v", id)
+		return fmt.Errorf("There was an unexpected error deleting layer ID: %v", id)
 	}
 	return
 }
