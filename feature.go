@@ -31,6 +31,19 @@ func NewFeature() *Feature {
 	}
 }
 
+//
+func NewFeatureFromWKT(wkt string) (feature *Feature, err error) {
+	feature = &Feature{
+		Feature: &geojson.Feature{},
+	}
+	g, err := WKTToGeometry(wkt)
+	if err != nil {
+		return feature, err
+	}
+	feature.Geometry = g
+	return
+}
+
 type getFeaturesRequest struct {
 	LayerID           string             `json:"layer"`
 	SpatialConstraint *SpatialConstraint `json:"spatialConstraint"`
