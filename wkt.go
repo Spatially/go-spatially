@@ -8,7 +8,7 @@ import (
 	geojson "github.com/paulmach/go.geojson"
 )
 
-//
+// WKTToGeometry converts a given Well Known Text shape into a geojson geometry
 func WKTToGeometry(wkt string) (g *geojson.Geometry, err error) {
 	return parseWKT([]byte(wkt))
 }

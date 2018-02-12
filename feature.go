@@ -11,27 +11,27 @@ import (
 	"github.com/pkg/errors"
 )
 
-//
+// Features is a slice of Feature
 type Features []*Feature
 
-//
+// NewFeatures creates a new empty slice of Features
 func NewFeatures() Features {
 	return Features{}
 }
 
-//
+// Feature is a wrapped geojson.Feature
 type Feature struct {
 	*geojson.Feature
 }
 
-//
+// NewFeature creates a new SpatialDB feature
 func NewFeature() *Feature {
 	return &Feature{
 		Feature: &geojson.Feature{},
 	}
 }
 
-//
+// NewFeatureFromWKT will create a new feature given a Well Known Text shape
 func NewFeatureFromWKT(wkt string) (feature *Feature, err error) {
 	feature = &Feature{
 		Feature: &geojson.Feature{},

@@ -11,22 +11,22 @@ import (
 	"github.com/pkg/errors"
 )
 
-//
+// Layers is a slice of Layer
 type Layers []*Layer
 
-//
+// Layer represents a group of features in the database.
 type Layer struct {
 	ID           string `json:"id"`
 	Name         string `json:"name"`
 	FeatureCount int    `json:"featureCount"`
 }
 
-//
+// NewLayer creates a new empty Layer
 func NewLayer() *Layer {
 	return &Layer{}
 }
 
-//
+// NewLayers creates a new empty slice of layers
 func NewLayers() Layers {
 	return Layers{}
 }
