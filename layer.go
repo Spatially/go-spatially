@@ -26,7 +26,7 @@ func NewLayer() *Layer {
 	return &Layer{}
 }
 
-// Get -
+// Get - Given a layer id, retrieves the layer and updates receiver
 func (l *Layer) Get(db SpatiallyDB, id string) (err error) {
 	request, err := http.NewRequest("GET", SpatiallyAPI+"/spatialdb/layer/"+id, nil)
 	if err != nil {
@@ -62,7 +62,7 @@ type createLayerRequest struct {
 	Name string `json:"name"`
 }
 
-// Create -
+// Create - Given a layer name, creates the layer and updates receiver
 func (l *Layer) Create(db SpatiallyDB, name string) (err error) {
 	requestBody := createLayerRequest{
 		Name: name,
@@ -100,7 +100,7 @@ func (l *Layer) Create(db SpatiallyDB, name string) (err error) {
 	return
 }
 
-// Delete -
+// Delete - Given a layer id, deletes the layer
 func (l *Layer) Delete(db SpatiallyDB, id string) (err error) {
 	request, err := http.NewRequest("DELETE", SpatiallyAPI+"/spatialdb/layer/"+id, nil)
 	if err != nil {
@@ -124,7 +124,8 @@ func NewLayers() Layers {
 	return Layers{}
 }
 
-//
+// Get - Retrieves all layers that belong to this user and updates the slice receiver.
+// It does not retrieve layer features
 func (l *Layers) Get(db SpatiallyDB) (err error) {
 	request, err := http.NewRequest("GET", SpatiallyAPI+"/spatialdb/layers", nil)
 	if err != nil {
