@@ -1,4 +1,4 @@
-package spatialdb
+package spatiallydb
 
 import (
 	"encoding/json"
@@ -6,9 +6,8 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/paulmach/go.geojson"
+	geojson "github.com/paulmach/go.geojson"
 	"github.com/pborman/uuid"
-
 	httpmock "gopkg.in/jarcoal/httpmock.v1"
 )
 
@@ -21,25 +20,24 @@ func TestCreateFeaturePoint(t *testing.T) {
 		t.Error(err)
 	}
 	feature := NewFeature()
-	feature.Geometry = geojson.NewPointGeometry([]float64{-71.06772422790527, 42.35848049347556})
-	feature.Properties = map[string]interface{}{
+	geometry := geojson.NewPointGeometry([]float64{-71.06772422790527, 42.35848049347556})
+	properties := map[string]interface{}{
 		"name": "Starbucks",
 	}
 	layerID := uuid.NewUUID().String()
 	featureID := uuid.NewUUID().String()
-	mockCreateFeatureEndpoint(t, layerID, featureID, feature)
-	createdFeature, err := sdb.CreateFeature(layerID, feature)
-	if err != nil {
+	mockCreateFeatureEndpoint(t, layerID, featureID)
+	if err := feature.Create(sdb, layerID, geometry, properties); err != nil {
 		t.Error(err)
 	}
-	if createdFeature.PropertyMustString("name") != "Starbucks" {
+	if feature.PropertyMustString("name") != "Starbucks" {
 		t.Error("Invalid feature name")
 	}
-	createdFeatureID, isString := createdFeature.ID.(string)
+	createdFeatureID, isString := feature.ID.(string)
 	if !isString {
 		t.Error("Invalid feature id")
 	}
-	if createdFeature.Geometry.IsPoint() == false {
+	if feature.Geometry.IsPoint() == false {
 		t.Error("Invalid feature geometry")
 	}
 	if createdFeatureID != featureID {
@@ -47,7 +45,7 @@ func TestCreateFeaturePoint(t *testing.T) {
 	}
 }
 
-func mockCreateFeatureEndpoint(t *testing.T, layerID, featureID string, feature *Feature) {
+func mockCreateFeatureEndpoint(t *testing.T, layerID, featureID string) {
 	httpmock.RegisterResponder("POST", SpatiallyAPI+"/spatialdb/feature", func(req *http.Request) (*http.Response, error) {
 		defer req.Body.Close()
 		body, err := ioutil.ReadAll(req.Body)
@@ -70,8 +68,8 @@ func mockCreateFeatureEndpoint(t *testing.T, layerID, featureID string, feature 
 		if request.Feature.PropertyMustString("name") != "Starbucks" {
 			t.Error("Request feature name does not match")
 		}
-		feature.ID = featureID
-		return httpmock.NewJsonResponse(200, feature)
+		request.Feature.ID = featureID
+		return httpmock.NewJsonResponse(200, request.Feature)
 	})
 }
 
@@ -83,28 +81,28 @@ func TestCreateFeaturePolygon(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	feature, err := NewFeatureFromWKT("POLYGON((-71.06296062469482 42.362336359418954,-71.05918407440186 42.358277337975814,-71.06665134429932 42.35979950174449,-71.06296062469482 42.362336359418954))")
+	feature := NewFeature()
+	geometry, err := WKTToGeometry("POLYGON((-71.06296062469482 42.362336359418954,-71.05918407440186 42.358277337975814,-71.06665134429932 42.35979950174449,-71.06296062469482 42.362336359418954))")
 	if err != nil {
 		t.Error(err)
 	}
-	feature.Properties = map[string]interface{}{
+	properties := map[string]interface{}{
 		"name": "Starbucks",
 	}
 	layerID := uuid.NewUUID().String()
 	featureID := uuid.NewUUID().String()
-	mockCreateFeatureEndpoint(t, layerID, featureID, feature)
-	createdFeature, err := sdb.CreateFeature(layerID, feature)
-	if err != nil {
+	mockCreateFeatureEndpoint(t, layerID, featureID)
+	if err := feature.Create(sdb, layerID, geometry, properties); err != nil {
 		t.Error(err)
 	}
-	if createdFeature.PropertyMustString("name") != "Starbucks" {
+	if feature.PropertyMustString("name") != "Starbucks" {
 		t.Error("Invalid feature name")
 	}
-	createdFeatureID, isString := createdFeature.ID.(string)
+	createdFeatureID, isString := feature.ID.(string)
 	if !isString {
 		t.Error("Invalid feature id")
 	}
-	if createdFeature.Geometry.IsPolygon() == false {
+	if feature.Geometry.IsPolygon() == false {
 		t.Error("Invalid feature geometry")
 	}
 	if createdFeatureID != featureID {
@@ -122,8 +120,8 @@ func TestGetFeaturesSimple(t *testing.T) {
 	}
 	layerID := uuid.NewUUID().String()
 	mockGetFeaturesEndpoint(t, layerID, nil)
-	features, err := sdb.GetFeatures(layerID, nil)
-	if err != nil {
+	features := NewFeatures()
+	if err := features.GetByLayer(sdb, layerID); err != nil {
 		t.Error(err)
 	}
 	if len(features) == 0 {
@@ -179,8 +177,8 @@ func TestGetFeaturesSpatialConstraint(t *testing.T) {
 	}
 	layerID := uuid.NewUUID().String()
 	mockGetFeaturesEndpoint(t, layerID, sp)
-	features, err := sdb.GetFeatures(layerID, sp)
-	if err != nil {
+	features := NewFeatures()
+	if err := features.GetBySpatialConstraint(sdb, layerID, sp); err != nil {
 		t.Error(err)
 	}
 	if len(features) == 0 {
@@ -206,8 +204,8 @@ func TestGetFeaturesSpatialConstraintBuffer(t *testing.T) {
 	}
 	layerID := uuid.NewUUID().String()
 	mockGetFeaturesEndpoint(t, layerID, sp)
-	features, err := sdb.GetFeatures(layerID, sp)
-	if err != nil {
+	features := NewFeatures()
+	if err := features.GetBySpatialConstraint(sdb, layerID, sp); err != nil {
 		t.Error(err)
 	}
 	if len(features) == 0 {
@@ -234,8 +232,8 @@ func TestGetFeatureByID(t *testing.T) {
 		feature.Properties = map[string]interface{}{"name": "Starbucks"}
 		return httpmock.NewJsonResponse(200, feature)
 	})
-	feature, err := sdb.GetFeature(featureID)
-	if err != nil {
+	feature := NewFeature()
+	if err := feature.Get(sdb, featureID); err != nil {
 		t.Error(err)
 	}
 	if feature.Geometry.IsPoint() == false {
@@ -277,10 +275,10 @@ func TestUpdateFeature(t *testing.T) {
 		feature.Properties = map[string]interface{}{"name": "Starbucks Boston"}
 		return httpmock.NewJsonResponse(200, feature)
 	})
-	feature, err := sdb.UpdateFeature(featureID, map[string]interface{}{
+	feature := NewFeature()
+	if err := feature.Update(sdb, featureID, map[string]interface{}{
 		"name": "Starbucks Boston",
-	})
-	if err != nil {
+	}); err != nil {
 		t.Error(err)
 	}
 	if feature.Geometry.IsPoint() == false {
@@ -303,7 +301,8 @@ func TestDeleteFeature(t *testing.T) {
 	httpmock.RegisterResponder("DELETE", SpatiallyAPI+"/spatialdb/feature/"+featureID, func(req *http.Request) (*http.Response, error) {
 		return httpmock.NewStringResponse(200, ""), nil
 	})
-	if err := sdb.DeleteFeature(featureID); err != nil {
+	feature := NewFeature()
+	if err := feature.Delete(sdb, featureID); err != nil {
 		t.Error(err)
 	}
 }

@@ -1,4 +1,4 @@
-package spatialdb
+package spatiallydb
 
 import (
 	"encoding/json"
@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/pborman/uuid"
-
 	httpmock "gopkg.in/jarcoal/httpmock.v1"
 )
 
@@ -37,8 +36,8 @@ func TestCreateLayer(t *testing.T) {
 		layer.Name = request.Name
 		return httpmock.NewJsonResponse(200, layer)
 	})
-	layer, err := sdb.CreateLayer("layer1")
-	if err != nil {
+	layer := NewLayer()
+	if err := layer.Create(sdb, "layer1"); err != nil {
 		t.Error(err)
 	}
 	if len(layer.ID) == 0 {
@@ -65,8 +64,8 @@ func TestGetLayers(t *testing.T) {
 		})
 		return httpmock.NewJsonResponse(200, layers)
 	})
-	layers, err := sdb.GetLayers()
-	if err != nil {
+	layers := NewLayers()
+	if err := layers.Get(sdb); err != nil {
 		t.Error(err)
 	}
 	if len(layers) == 0 {
@@ -93,8 +92,8 @@ func TestGetLayer(t *testing.T) {
 		layer.Name = "layer1"
 		return httpmock.NewJsonResponse(200, layer)
 	})
-	layer, err := sdb.GetLayer(layerID)
-	if err != nil {
+	layer := NewLayer()
+	if err := layer.Get(sdb, layerID); err != nil {
 		t.Error(err)
 	}
 	if layer.ID != layerID {
@@ -117,7 +116,8 @@ func TestDeleteLayer(t *testing.T) {
 	httpmock.RegisterResponder("DELETE", SpatiallyAPI+"/spatialdb/layer/"+layerID, func(req *http.Request) (*http.Response, error) {
 		return httpmock.NewStringResponse(200, ""), nil
 	})
-	if err := sdb.DeleteLayer(layerID); err != nil {
+	layer := NewLayer()
+	if err := layer.Delete(sdb, layerID); err != nil {
 		t.Error(err)
 	}
 }

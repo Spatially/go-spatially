@@ -1,4 +1,4 @@
-package spatialdb
+package spatiallydb
 
 import (
 	"bytes"
@@ -17,6 +17,80 @@ type Features []*Feature
 // NewFeatures creates a new empty slice of Features
 func NewFeatures() Features {
 	return Features{}
+}
+
+type getFeaturesRequest struct {
+	LayerID           string             `json:"layer"`
+	SpatialConstraint *SpatialConstraint `json:"spatialConstraint"`
+}
+
+//
+func (f *Features) GetByLayer(db SpatiallyDB, layerID string) (err error) {
+	requestBody := getFeaturesRequest{
+		LayerID: layerID,
+	}
+	j, err := json.Marshal(requestBody)
+	if err != nil {
+		return errors.Wrap(err, "get features by layer json marshal request body")
+	}
+	body := bytes.NewReader(j)
+	request, err := http.NewRequest("POST", SpatiallyAPI+"/spatialdb/features", body)
+	if err != nil {
+		return errors.Wrap(err, "get features by layer prepare http request")
+	}
+	db.PrepareRequest(request)
+	requestClient := &http.Client{}
+	resp, err := requestClient.Do(request)
+	if err != nil {
+		return errors.Wrap(err, "get features by layer http post")
+	}
+	defer resp.Body.Close()
+	responseBody, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return errors.Wrap(err, "get features by layer read response body")
+	}
+	if resp.StatusCode != 200 {
+		return db.Error(responseBody)
+	}
+	if err = json.Unmarshal(responseBody, f); err != nil {
+		return errors.Wrap(err, "get features by layer parse response body json")
+	}
+	return
+}
+
+//
+func (f *Features) GetBySpatialConstraint(db SpatiallyDB, layerID string, spatialConstraint *SpatialConstraint) (err error) {
+	requestBody := getFeaturesRequest{
+		LayerID:           layerID,
+		SpatialConstraint: spatialConstraint,
+	}
+	j, err := json.Marshal(requestBody)
+	if err != nil {
+		return errors.Wrap(err, "get features by spatial constraint json marshal request body")
+	}
+	body := bytes.NewReader(j)
+	request, err := http.NewRequest("POST", SpatiallyAPI+"/spatialdb/features", body)
+	if err != nil {
+		return errors.Wrap(err, "get features by spatial constraint prepare http request")
+	}
+	db.PrepareRequest(request)
+	requestClient := &http.Client{}
+	resp, err := requestClient.Do(request)
+	if err != nil {
+		return errors.Wrap(err, "get features by spatial constraint http post")
+	}
+	defer resp.Body.Close()
+	responseBody, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return errors.Wrap(err, "get features by spatial constraint read response body")
+	}
+	if resp.StatusCode != 200 {
+		return db.Error(responseBody)
+	}
+	if err = json.Unmarshal(responseBody, f); err != nil {
+		return errors.Wrap(err, "get features by spatial constraint parse response body json")
+	}
+	return
 }
 
 // Feature is a wrapped geojson.Feature
@@ -44,68 +118,28 @@ func NewFeatureFromWKT(wkt string) (feature *Feature, err error) {
 	return
 }
 
-type getFeaturesRequest struct {
-	LayerID           string             `json:"layer"`
-	SpatialConstraint *SpatialConstraint `json:"spatialConstraint"`
-}
-
-func (s spatialDB) GetFeatures(layerID string, spatialConstraint *SpatialConstraint) (features Features, err error) {
-	requestBody := getFeaturesRequest{
-		LayerID:           layerID,
-		SpatialConstraint: spatialConstraint,
-	}
-	j, err := json.Marshal(requestBody)
-	if err != nil {
-		return nil, errors.Wrap(err, "spatialdb get features json marshal request body")
-	}
-	body := bytes.NewReader(j)
-	request, err := http.NewRequest("POST", SpatiallyAPI+"/spatialdb/features", body)
-	if err != nil {
-		return nil, errors.Wrap(err, "spatialdb get features prepare http request")
-	}
-	s.prepareRequest(request)
-	requestClient := &http.Client{}
-	resp, err := requestClient.Do(request)
-	if err != nil {
-		return nil, errors.Wrap(err, "spatialdb get features http post")
-	}
-	defer resp.Body.Close()
-	responseBody, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, errors.Wrap(err, "spatialdb get features read response body")
-	}
-	if resp.StatusCode != 200 {
-		return nil, s.requestError(responseBody)
-	}
-	features = NewFeatures()
-	if err = json.Unmarshal(responseBody, &features); err != nil {
-		return nil, errors.Wrap(err, "spatialdb get features parse response body json")
-	}
-	return
-}
-
-func (s spatialDB) GetFeature(id string) (feature *Feature, err error) {
+//
+func (f *Feature) Get(db SpatiallyDB, id string) (err error) {
 	request, err := http.NewRequest("GET", SpatiallyAPI+"/spatialdb/feature/"+id, nil)
 	if err != nil {
-		return nil, errors.Wrap(err, "spatialdb get feature prepare http request")
+		return errors.Wrap(err, "get feature prepare http request")
 	}
-	s.prepareRequest(request)
+	db.PrepareRequest(request)
 	requestClient := &http.Client{}
 	resp, err := requestClient.Do(request)
 	if err != nil {
-		return nil, errors.Wrap(err, "spatialdb get feature http get")
+		return errors.Wrap(err, "get feature http get")
 	}
 	defer resp.Body.Close()
 	responseBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, errors.Wrap(err, "spatialdb get feature read response body")
+		return errors.Wrap(err, "get feature read response body")
 	}
 	if resp.StatusCode != 200 {
-		return nil, s.requestError(responseBody)
+		return db.Error(responseBody)
 	}
-	feature = NewFeature()
-	if err = json.Unmarshal(responseBody, feature); err != nil {
-		return nil, errors.Wrap(err, "spatialdb get feature parse response body json")
+	if err = json.Unmarshal(responseBody, f); err != nil {
+		return errors.Wrap(err, "get feature parse response body json")
 	}
 	return
 }
@@ -115,37 +149,39 @@ type createFeatureRequest struct {
 	Feature *geojson.Feature `json:"feature"`
 }
 
-func (s spatialDB) CreateFeature(layerID string, feature *Feature) (createdFeature *Feature, err error) {
+//
+func (f *Feature) Create(db SpatiallyDB, layerID string, geometry *geojson.Geometry, properties map[string]interface{}) (err error) {
+	f.Geometry = geometry
+	f.Properties = properties
 	requestBody := createFeatureRequest{
 		LayerID: layerID,
-		Feature: feature.Feature,
+		Feature: f.Feature,
 	}
 	j, err := json.Marshal(requestBody)
 	if err != nil {
-		return nil, errors.Wrap(err, "spatialdb create feature json marshal request body")
+		return errors.Wrap(err, "create feature json marshal request body")
 	}
 	body := bytes.NewReader(j)
 	request, err := http.NewRequest("POST", SpatiallyAPI+"/spatialdb/feature", body)
 	if err != nil {
-		return nil, errors.Wrap(err, "spatialdb create feature prepare http request")
+		return errors.Wrap(err, "create feature prepare http request")
 	}
-	s.prepareRequest(request)
+	db.PrepareRequest(request)
 	requestClient := &http.Client{}
 	resp, err := requestClient.Do(request)
 	if err != nil {
-		return nil, errors.Wrap(err, "spatialdb create feature http post")
+		return errors.Wrap(err, "create feature http post")
 	}
 	defer resp.Body.Close()
 	responseBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, errors.Wrap(err, "spatialdb create feature read response body")
+		return errors.Wrap(err, "create feature read response body")
 	}
 	if resp.StatusCode != 200 {
-		return nil, s.requestError(responseBody)
+		return db.Error(responseBody)
 	}
-	createdFeature = NewFeature()
-	if err = json.Unmarshal(responseBody, createdFeature); err != nil {
-		return nil, errors.Wrap(err, "spatialdb create feature parse response body json")
+	if err = json.Unmarshal(responseBody, f); err != nil {
+		return errors.Wrap(err, "create feature parse response body json")
 	}
 	return
 }
@@ -154,50 +190,51 @@ type updateFeatureRequest struct {
 	Properties map[string]interface{} `json:"properties"`
 }
 
-func (s spatialDB) UpdateFeature(id string, properties map[string]interface{}) (feature *Feature, err error) {
+//
+func (f *Feature) Update(db SpatiallyDB, id string, properties map[string]interface{}) (err error) {
 	requestBody := updateFeatureRequest{
 		Properties: properties,
 	}
 	j, err := json.Marshal(requestBody)
 	if err != nil {
-		return nil, errors.Wrap(err, "spatialdb update feature json marshal request body")
+		return errors.Wrap(err, "update feature json marshal request body")
 	}
 	body := bytes.NewReader(j)
 	request, err := http.NewRequest("PUT", SpatiallyAPI+"/spatialdb/feature/"+id, body)
 	if err != nil {
-		return nil, errors.Wrap(err, "spatialdb update feature prepare http request")
+		return errors.Wrap(err, "update feature prepare http request")
 	}
-	s.prepareRequest(request)
+	db.PrepareRequest(request)
 	requestClient := &http.Client{}
 	resp, err := requestClient.Do(request)
 	if err != nil {
-		return nil, errors.Wrap(err, "spatialdb update feature http put")
+		return errors.Wrap(err, "update feature http put")
 	}
 	defer resp.Body.Close()
 	responseBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, errors.Wrap(err, "spatialdb update feature read response body")
+		return errors.Wrap(err, "update feature read response body")
 	}
 	if resp.StatusCode != 200 {
-		return nil, s.requestError(responseBody)
+		return db.Error(responseBody)
 	}
-	feature = NewFeature()
-	if err = json.Unmarshal(responseBody, feature); err != nil {
-		return nil, errors.Wrap(err, "spatialdb update feature parse response body json")
+	if err = json.Unmarshal(responseBody, f); err != nil {
+		return errors.Wrap(err, "update feature parse response body json")
 	}
 	return
 }
 
-func (s spatialDB) DeleteFeature(id string) (err error) {
+//
+func (f *Feature) Delete(db SpatiallyDB, id string) (err error) {
 	request, err := http.NewRequest("DELETE", SpatiallyAPI+"/spatialdb/feature/"+id, nil)
 	if err != nil {
-		return errors.Wrap(err, "spatialdb delete feature prepare http request")
+		return errors.Wrap(err, "delete feature prepare http request")
 	}
-	s.prepareRequest(request)
+	db.PrepareRequest(request)
 	requestClient := &http.Client{}
 	resp, err := requestClient.Do(request)
 	if err != nil {
-		return errors.Wrap(err, "spatialdb delete feature http delete")
+		return errors.Wrap(err, "delete feature http delete")
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != 200 {

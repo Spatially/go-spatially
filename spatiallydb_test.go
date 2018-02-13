@@ -1,4 +1,4 @@
-package spatialdb
+package spatiallydb
 
 import (
 	"encoding/json"
