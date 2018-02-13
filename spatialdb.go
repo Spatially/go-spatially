@@ -1,3 +1,5 @@
+// Package spatialdb provides a set of APIs to communicate with Spatially DB API to create layers
+// and features in your database. It supports operation with GeoJSON and Well-Known-Text feature types
 package spatialdb
 
 import (
