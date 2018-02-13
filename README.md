@@ -1,4 +1,4 @@
-# go-spatialdb
+# go-spatiallydb
 
 TODO: SpatiallyDB and what is it
 
