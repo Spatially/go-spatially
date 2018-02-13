@@ -27,7 +27,7 @@ TODO: SpatiallyDB and what is it
 ### Create a SpatiallyDB instance
 
 ```go
-spatiallyDB, err := spatialdb.New(YOUR_APPLICATION_CODE, YOUR_APPLICATION_KEY)
+db, err := spatiallydb.New(YOUR_APPLICATION_CODE, YOUR_APPLICATION_KEY)
 if err != nil {
  log.Fatal(err)
 }
@@ -36,31 +36,38 @@ if err != nil {
 ### Create a layer & feature
 
 ```go
-layer, err := spatiallyDB.CreateLayer("businesses")
-if err != nil {
- log.Fatal(err)
+layer := spatiallydb.NewLayer()
+if err := layer.Create(db, "businesses"); err != nil {
+  log.Fatal(err)
 }
 
-feature := spatialdb.NewFeature()
-feature.Geometry = geojson.NewPointGeometry([]float64{-71.06772422790527, 42.35848049347556})
-feature.Properties = map[string]interface{}{
+feature := spatiallydb.NewFeature()
+geometry := geojson.NewPointGeometry([]float64{-71.06772422790527, 42.35848049347556})
+properties := map[string]interface{}{
  "name": "Starbucks",
 }
+if err := feature.Create(db, layer.ID, geometry, properties); err != nil {
+  log.Fatal(err)
+}
+```
 
-createdFeature, err := spatiallyDB.CreateFeature(layer.ID, feature)
-if err != nil {
- log.Fatal(err)
+### Get layer
+
+```go
+layer := spatiallydb.NewLayer()
+if err := layer.Get(db, layerID); err != nil {
+  log.Fatal(err)
 }
 ```
 
 ### Get features in a polygon
 
 ```go
-spatialConstraint := &spatialdb.SpatialConstraint{
+spatialConstraint := &spatiallydb.SpatialConstraint{
   WKT: "POLYGON((-71.06952667236328 42.35902554157146,-71.06420516967773 42.35902554157146,-71.06420516967773 42.3563616979687,-71.06952667236328 42.3563616979687,-71.06952667236328 42.35902554157146))"
 }
-features, err := spatiallyDB.GetFeatures(layer.ID, spatialConstraint)
-if err != nil {
+features := spatiallydb.NewFeatures()
+if err := features.GetBySpatialConstraint(db, layer.ID, spatialConstraint); err != nil {
   log.Fatal(err)
 }
 ```
@@ -68,12 +75,12 @@ if err != nil {
 ### Get features in a buffer (circle)
 
 ```go
-spatialConstraint := &spatialdb.SpatialConstraint{
+spatialConstraint := &spatiallydb.SpatialConstraint{
   WKT: "POINT(-71.06042861938477 42.35686910545623)",
-  Radius: 1000.0 // meters
+  Radius: 1000.0, // meters
 }
-features, err := spatiallyDB.GetFeatures(layer.ID, spatialConstraint)
-if err != nil {
+features := spatiallydb.NewFeatures()
+if err := features.GetBySpatialConstraint(db, layer.ID, spatialConstraint); err != nil {
   log.Fatal(err)
 }
 ```
@@ -81,10 +88,10 @@ if err != nil {
 ### Update a feature
 
 ```go
-updatedFeature, err := spatiallyDB.UpdateFeature(createdFeature.ID, map[string]interface{}{
+feature := spatiallydb.NewFeature()
+if err := feature.Update(db, featureID, map[string]interface{}{
  "name": "Starbucks Boston",
-})
-if err != nil {
+}); err != nil {
  log.Fatal(err)
 }
 ```
@@ -92,8 +99,8 @@ if err != nil {
 ### Delete a feature
 
 ```go
-err := spatiallyDB.DeleteFeature(updatedFeature.ID)
-if err != nil {
+feature := spatiallydb.NewFeature()
+if err := feature.Delete(db, featureID); err != nil {
  log.Fatal(err)
 }
 ```
@@ -101,8 +108,8 @@ if err != nil {
 ### Delete a layer
 
 ```go
-err := spatiallyDB.DeleteLayer(layer.ID)
-if err != nil {
+layer := spatiallydb.NewLayer()
+if err := layer.Delete(db, layerID); err != nil {
  log.Fatal(err)
 }
 ```
