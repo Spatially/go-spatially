@@ -12,7 +12,7 @@ import (
 )
 
 //
-type SpatiallyDB interface {
+type Database interface {
 	PrepareRequest(req *http.Request)
 	Error(response []byte) (err error)
 }
@@ -37,7 +37,7 @@ const (
 // SpatiallyAPI - Spatially's API URL
 const SpatiallyAPI = "https://api.spatially.com"
 
-type spatiallyDB struct {
+type database struct {
 	Token string
 }
 
@@ -50,9 +50,9 @@ type gatewayResponse struct {
 	Token string `json:"token"`
 }
 
-// New created a new instance of SpatialDB. The parameters are the api code & key
+// New created a new instance of Database. The parameters are the api code & key
 // provided by Spatially. It generates a token with the API.
-func NewDatabase(apiCode, apiKey string) (SpatiallyDB, error) {
+func NewDatabase(apiCode, apiKey string) (Database, error) {
 	request := gatewayRequest{
 		Code: apiCode,
 		Key:  apiKey,
@@ -78,10 +78,10 @@ func NewDatabase(apiCode, apiKey string) (SpatiallyDB, error) {
 	if len(response.Token) == 0 {
 		return nil, errors.New("SpatialDB was not able to generate a valid token")
 	}
-	return &spatiallyDB{Token: response.Token}, nil
+	return &database{Token: response.Token}, nil
 }
 
-func (s spatiallyDB) PrepareRequest(request *http.Request) {
+func (s *database) PrepareRequest(request *http.Request) {
 	request.Header.Set("Content-Type", "application/json")
 	request.Header.Set("Authorization", "Bearer "+s.Token)
 }
@@ -90,7 +90,7 @@ type requestError struct {
 	Message string `json:"message"`
 }
 
-func (s *spatiallyDB) Error(responseBody []byte) error {
+func (s *database) Error(responseBody []byte) error {
 	var err requestError
 	if err := json.Unmarshal(responseBody, &err); err != nil {
 		return err
