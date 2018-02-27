@@ -1,6 +1,6 @@
-// Package spatiallydb provides a set of APIs to communicate with Spatially DB API to create layers
+// Package spatially provides a set of APIs to communicate with Spatially DB API to create layers
 // and features in your database. It supports operation with GeoJSON and Well-Known-Text feature types
-package spatiallydb
+package spatially
 
 import (
 	"bytes"
@@ -52,7 +52,7 @@ type gatewayResponse struct {
 
 // New created a new instance of SpatialDB. The parameters are the api code & key
 // provided by Spatially. It generates a token with the API.
-func New(apiCode, apiKey string) (SpatiallyDB, error) {
+func NewDatabase(apiCode, apiKey string) (SpatiallyDB, error) {
 	request := gatewayRequest{
 		Code: apiCode,
 		Key:  apiKey,

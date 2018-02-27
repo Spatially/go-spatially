@@ -1,4 +1,4 @@
-package spatiallydb
+package spatially
 
 import (
 	"encoding/json"
@@ -14,7 +14,7 @@ func TestCreateLayer(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 	mockGatewayEndpoint(t)
-	sdb, err := New(applicationCode, applicationKey)
+	sdb, err := NewDatabase(applicationCode, applicationKey)
 	if err != nil {
 		t.Error(err)
 	}
@@ -52,7 +52,7 @@ func TestGetLayers(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 	mockGatewayEndpoint(t)
-	sdb, err := New(applicationCode, applicationKey)
+	sdb, err := NewDatabase(applicationCode, applicationKey)
 	if err != nil {
 		t.Error(err)
 	}
@@ -81,7 +81,7 @@ func TestGetLayer(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 	mockGatewayEndpoint(t)
-	sdb, err := New(applicationCode, applicationKey)
+	sdb, err := NewDatabase(applicationCode, applicationKey)
 	if err != nil {
 		t.Error(err)
 	}
@@ -108,7 +108,7 @@ func TestDeleteLayer(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 	mockGatewayEndpoint(t)
-	sdb, err := New(applicationCode, applicationKey)
+	sdb, err := NewDatabase(applicationCode, applicationKey)
 	if err != nil {
 		t.Error(err)
 	}

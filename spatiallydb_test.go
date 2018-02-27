@@ -1,4 +1,4 @@
-package spatiallydb
+package spatially
 
 import (
 	"encoding/json"
@@ -16,7 +16,7 @@ func TestNew(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 	mockGatewayEndpoint(t)
-	_, err := New(applicationCode, applicationKey)
+	_, err := NewDatabase(applicationCode, applicationKey)
 	if err != nil {
 		t.Error(err)
 	}

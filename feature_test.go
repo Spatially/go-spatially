@@ -1,4 +1,4 @@
-package spatiallydb
+package spatially
 
 import (
 	"encoding/json"
@@ -15,7 +15,7 @@ func TestCreateFeaturePoint(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 	mockGatewayEndpoint(t)
-	sdb, err := New(applicationCode, applicationKey)
+	sdb, err := NewDatabase(applicationCode, applicationKey)
 	if err != nil {
 		t.Error(err)
 	}
@@ -77,7 +77,7 @@ func TestCreateFeaturePolygon(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 	mockGatewayEndpoint(t)
-	sdb, err := New(applicationCode, applicationKey)
+	sdb, err := NewDatabase(applicationCode, applicationKey)
 	if err != nil {
 		t.Error(err)
 	}
@@ -114,7 +114,7 @@ func TestGetFeaturesSimple(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 	mockGatewayEndpoint(t)
-	sdb, err := New(applicationCode, applicationKey)
+	sdb, err := NewDatabase(applicationCode, applicationKey)
 	if err != nil {
 		t.Error(err)
 	}
@@ -168,7 +168,7 @@ func TestGetFeaturesSpatialConstraint(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 	mockGatewayEndpoint(t)
-	sdb, err := New(applicationCode, applicationKey)
+	sdb, err := NewDatabase(applicationCode, applicationKey)
 	if err != nil {
 		t.Error(err)
 	}
@@ -194,7 +194,7 @@ func TestGetFeaturesSpatialConstraintBuffer(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 	mockGatewayEndpoint(t)
-	sdb, err := New(applicationCode, applicationKey)
+	sdb, err := NewDatabase(applicationCode, applicationKey)
 	if err != nil {
 		t.Error(err)
 	}
@@ -221,7 +221,7 @@ func TestGetFeatureByID(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 	mockGatewayEndpoint(t)
-	sdb, err := New(applicationCode, applicationKey)
+	sdb, err := NewDatabase(applicationCode, applicationKey)
 	if err != nil {
 		t.Error(err)
 	}
@@ -248,7 +248,7 @@ func TestUpdateFeature(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 	mockGatewayEndpoint(t)
-	sdb, err := New(applicationCode, applicationKey)
+	sdb, err := NewDatabase(applicationCode, applicationKey)
 	if err != nil {
 		t.Error(err)
 	}
@@ -293,7 +293,7 @@ func TestDeleteFeature(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 	mockGatewayEndpoint(t)
-	sdb, err := New(applicationCode, applicationKey)
+	sdb, err := NewDatabase(applicationCode, applicationKey)
 	if err != nil {
 		t.Error(err)
 	}

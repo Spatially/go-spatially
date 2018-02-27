@@ -1,4 +1,4 @@
-package spatiallydb
+package spatially
 
 import (
 	"bytes"
