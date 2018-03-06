@@ -16,7 +16,7 @@ func TestNew(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 	mockGatewayEndpoint(t)
-	_, err := NewDatabase(applicationCode, applicationKey)
+	_, err := NewAPI(applicationCode, applicationKey)
 	if err != nil {
 		t.Error(err)
 	}

@@ -25,7 +25,7 @@ type getFeaturesRequest struct {
 }
 
 // GetByLayer - Given a layer id, retrieves the features that belong to it and updates the slice receiver
-func (f *Features) GetByLayer(db Database, layerID string) (err error) {
+func (f *Features) GetByLayer(db API, layerID string) (err error) {
 	requestBody := getFeaturesRequest{
 		LayerID: layerID,
 	}
@@ -60,7 +60,7 @@ func (f *Features) GetByLayer(db Database, layerID string) (err error) {
 
 // GetBySpatialConstraint - Given a layer id and spatial constraint object, retrieves all features that satisfay the constraint
 // and updates the slice receiver
-func (f *Features) GetBySpatialConstraint(db Database, layerID string, spatialConstraint *SpatialConstraint) (err error) {
+func (f *Features) GetBySpatialConstraint(db API, layerID string, spatialConstraint *SpatialConstraint) (err error) {
 	requestBody := getFeaturesRequest{
 		LayerID:           layerID,
 		SpatialConstraint: spatialConstraint,
@@ -99,7 +99,7 @@ type Feature struct {
 	*geojson.Feature
 }
 
-// NewFeature creates a new Database feature
+// NewFeature creates a new API feature
 func NewFeature() *Feature {
 	return &Feature{
 		Feature: &geojson.Feature{},
@@ -120,7 +120,7 @@ func NewFeatureFromWKT(wkt string) (feature *Feature, err error) {
 }
 
 // Get - Given a feature id, retrieves the feature and updates the receiver
-func (f *Feature) Get(db Database, id string) (err error) {
+func (f *Feature) Get(db API, id string) (err error) {
 	request, err := http.NewRequest("GET", SpatiallyAPI+"/spatialdb/feature/"+id, nil)
 	if err != nil {
 		return errors.Wrap(err, "get feature prepare http request")
@@ -152,7 +152,7 @@ type createFeatureRequest struct {
 
 // Create - given a layer id, geometry and properties - creates the feature and updates the receiver with the created feature.
 // It also increases the layer feature count
-func (f *Feature) Create(db Database, layerID string, geometry *geojson.Geometry, properties map[string]interface{}) (err error) {
+func (f *Feature) Create(db API, layerID string, geometry *geojson.Geometry, properties map[string]interface{}) (err error) {
 	f.Geometry = geometry
 	f.Properties = properties
 	requestBody := createFeatureRequest{
@@ -193,7 +193,7 @@ type updateFeatureRequest struct {
 }
 
 // Update - Given a feature id and properties, it updates the feature and receiver
-func (f *Feature) Update(db Database, id string, properties map[string]interface{}) (err error) {
+func (f *Feature) Update(db API, id string, properties map[string]interface{}) (err error) {
 	requestBody := updateFeatureRequest{
 		Properties: properties,
 	}
@@ -227,7 +227,7 @@ func (f *Feature) Update(db Database, id string, properties map[string]interface
 }
 
 // Delete - Given a feature id, it deletes the feature and decreases the layer's feature count
-func (f *Feature) Delete(db Database, id string) (err error) {
+func (f *Feature) Delete(db API, id string) (err error) {
 	request, err := http.NewRequest("DELETE", SpatiallyAPI+"/spatialdb/feature/"+id, nil)
 	if err != nil {
 		return errors.Wrap(err, "delete feature prepare http request")
