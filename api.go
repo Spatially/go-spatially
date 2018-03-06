@@ -35,8 +35,7 @@ const (
 )
 
 // SpatiallyAPI - Spatially's API URL
-// const SpatiallyAPI = "https://api.spatially.com"
-const SpatiallyAPI = "http://localhost:8000"
+const SpatiallyAPI = "https://api.spatially.com"
 
 type api struct {
 	Token string
