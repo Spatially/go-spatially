@@ -93,7 +93,7 @@ type requestError struct {
 func (s *api) Error(responseBody []byte) error {
 	var err requestError
 	if err := json.Unmarshal(responseBody, &err); err != nil {
-		return err
+		return errors.Wrap(errors.New(string(responseBody)), "unable to parse error body")
 	}
 	return errors.New(err.Message)
 }

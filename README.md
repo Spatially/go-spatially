@@ -164,3 +164,48 @@ if err := layer.Delete(api, layerID); err != nil {
  log.Fatal(err)
 }
 ```
+
+### Grid - Population
+
+```go
+pop, err := spatially.Population(api, "POINT(-71.064156780428 42.35862883483673)", 150)
+if err != nil {
+  log.Fatal(err)
+}
+```
+
+### Grid - Trade Area Market Size
+
+```go
+marketSize, err := spatially.TradeAreaMarketSize(api, ata)
+if err != nil {
+  log.Fatal(err)
+}
+```
+
+### Grid - Popular Times
+
+```go
+times, err := spatially.PopularTimes(api, "POINT(-71.064156780428 42.35862883483673)", 150)
+if err != nil {
+  log.Fatal(err)
+}
+```
+
+### Grid - Distance Sensitivity
+
+```go
+ds, err := spatially.DistanceSensitivity(api, "POINT(-71.064156780428 42.35862883483673)", 150)
+if err != nil {
+  log.Fatal(err)
+}
+```
+
+### Grid - Demographics
+
+```go
+demographics, err := spatially.Demographics(api, "POINT(-71.064156780428 42.35862883483673)", 150)
+if err != nil {
+  log.Fatal(err)
+}
+```
